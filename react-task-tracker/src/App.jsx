@@ -1,60 +1,60 @@
 import { useState, useEffect } from 'react';
 
 export default function App() {
-  // 1. LAZY STATE INITIALIZATION WITH LOCALSTORAGE
+  // LAZY STATE INITIALIZATION WITH LOCALSTORAGE, ensures getItem is not run every render
   const [tasks, setTasks] = useState(() => {
     const savedTasks = localStorage.getItem('app_tasks');
-    return savedTasks ? JSON.parse(savedTasks) : [
+    return savedTasks ? JSON.parse(savedTasks) : [ //if savedTasks is not empty, convert to object, else, populate with generic task
       { id: 1, text: 'Master React state and useEffect', completed: true, category: 'Study' },
       { id: 2, text: 'Push Task Tracker project to GitHub', completed: false, category: 'Work' }
     ];
   });
 
-  const [inputText, setInputText] = useState('');
-  const [category, setCategory] = useState('Personal');
+  const [inputText, setInputText] = useState('');//track user input
+  const [category, setCategory] = useState('Personal');//track selected category
   const [filter, setFilter] = useState('all'); // State string: 'all' | 'active' | 'completed'
 
-  // 2. USEEFFECT: SYNC TASKS TO LOCALSTORAGE
+  // USEEFFECT: SYNC TASKS TO LOCALSTORAGE
   useEffect(() => {
-    localStorage.setItem('app_tasks', JSON.stringify(tasks));
-  }, [tasks]);
+    localStorage.setItem('app_tasks', JSON.stringify(tasks));//creates/updates key: value pair
+  }, [tasks]);//whenever tasks changes, update this change in localstorage
 
-  // 3. HANDLERS
+  // HANDLERS
   const handleAddTask = (e) => {
     e.preventDefault();
-    if (!inputText.trim()) return;
+    if (!inputText.trim()) return;//if no input
 
     const newTask = {
-      id: Date.now(),
-      text: inputText.trim(),
-      completed: false,
+      id: Date.now(),//unique id
+      text: inputText.trim(),//take user input
+      completed: false,//activity default value is false
       category
     };
 
-    setTasks(prevTasks => [newTask, ...prevTasks]);
-    setInputText('');
+    setTasks(prevTasks => [newTask, ...prevTasks]);//prepend new task to the task array
+    setInputText('');//clear the user input for the next input
   };
 
   const toggleTask = (id) => {
     setTasks(prevTasks =>
       prevTasks.map(task =>
         task.id === id ? { ...task, completed: !task.completed } : task
-      )
+      )//searches the task array for the toggled task (check by id) and flips the value of its completed field
     );
   };
 
   const deleteTask = (id) => {
     setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
-  };
+  };//searches the task array for the deleted task (check by id) and excludes it from the new task array
 
-  // 4. DERIVED STATE
+  // DERIVED STATE
   const filteredTasks = tasks.filter(task => {
-    if (filter === 'active') return !task.completed;
-    if (filter === 'completed') return task.completed;
-    return true; // 'all'
+    if (filter === 'active') return !task.completed;//return all active tasks (active tasks mean its completed field is FALSE, so !FALSE = TRUE
+    if (filter === 'completed') return task.completed;//return all completed tasks as its completed field is TRUE
+    return true; // if not active and not completed, then returns all tasks in the array
   });
 
-  const completedCount = tasks.filter(t => t.completed).length;
+  const completedCount = tasks.filter(t => t.completed).length;//length of task array with all completed tasks
 
   return (
     <div style={styles.container}>
